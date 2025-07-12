@@ -27,8 +27,8 @@ It supports various formats and quality options while respecting YouTube's terms
 			return fmt.Errorf("configuration validation failed: %w", err)
 		}
 
-		downloader := downloader.New(cfg)
-		return downloader.Download()
+		dl := downloader.New(cfg)
+		return dl.Download()
 	},
 }
 
