@@ -67,7 +67,7 @@ func TestConfig_Validate(t *testing.T) {
 	}
 }
 
-func TestConfig_ensureOutputDir(t *testing.T) {
+func TestConfig_EnsureOutputDir(t *testing.T) {
 	tmpDir := os.TempDir()
 	testDir := filepath.Join(tmpDir, "drop-tube-test")
 
