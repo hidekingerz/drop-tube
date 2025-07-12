@@ -56,6 +56,12 @@ cd drop-tube
 go build -o drop-tube cmd/drop-tube/main.go
 ```
 
+### drop-tubeのインストール
+
+```bash
+go install github.com/hidekingerz/drop-tube/cmd/drop-tube@latest
+```
+
 ## 使用方法
 
 ### 基本的な使用
