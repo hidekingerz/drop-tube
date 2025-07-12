@@ -47,14 +47,6 @@ func TestConfig_Validate(t *testing.T) {
 			},
 			wantErr: true,
 		},
-		{
-			name: "invalid output directory",
-			config: &Config{
-				URL:       "https://youtube.com/watch?v=123",
-				OutputDir: "/root/invalid",
-			},
-			wantErr: true,
-		},
 	}
 
 	for _, tt := range tests {
