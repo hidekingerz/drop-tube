@@ -6,8 +6,8 @@ YouTube動画をダウンロードするGoアプリケーション「DropTube」
 ## ドキュメント準拠
 コード生成・修正時は必ず以下のドキュメントに準拠すること：
 
-@docs/specification.md
-@docs/styleguide.md
+[specification](docs/specification.md)
+[styleguide](docs/styleguide.md)
 
 ### 重要な指示
 1. **仕様書準拠**: `docs/specification.md`で定義された機能要件、技術仕様、ディレクトリ構成に厳密に従う
