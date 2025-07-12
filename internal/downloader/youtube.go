@@ -5,6 +5,7 @@ package downloader
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -80,13 +81,10 @@ func (d *Downloader) buildYtDlpArgs() []string {
 		args = append(args, "--extract-audio")
 		args = append(args, "--audio-format", d.config.AudioFormat)
 	} else {
-		if d.config.Format != "best" {
-			args = append(args, "--format", d.config.Format)
+		formatSpec := d.buildFormatSpec()
+		if formatSpec != "" {
+			args = append(args, "--format", formatSpec)
 		}
-	}
-
-	if d.config.Quality != "best" && !d.config.AudioOnly {
-		args = append(args, "--format-sort", fmt.Sprintf("height:%s", d.config.Quality))
 	}
 
 	if d.config.Playlist {
@@ -102,7 +100,50 @@ func (d *Downloader) buildYtDlpArgs() []string {
 		args = append(args, "--quiet", "--no-warnings")
 	}
 
-	args = append(args, d.config.URL)
+	cleanURL := d.cleanURL(d.config.URL)
+	args = append(args, cleanURL)
 
 	return args
+}
+
+// buildFormatSpec constructs the format specification for yt-dlp.
+func (d *Downloader) buildFormatSpec() string {
+	if d.config.Format != "best" && d.config.Quality != "best" {
+		// Both format and quality specified
+		height := d.extractHeight(d.config.Quality)
+		return fmt.Sprintf("bestvideo[ext=%s][height<=%s]+bestaudio/best[ext=%s][height<=%s]", 
+			d.config.Format, height, d.config.Format, height)
+	} else if d.config.Quality != "best" {
+		// Only quality specified
+		height := d.extractHeight(d.config.Quality)
+		return fmt.Sprintf("bestvideo[height<=%s]+bestaudio/best[height<=%s]", height, height)
+	} else if d.config.Format != "best" {
+		// Only format specified
+		return fmt.Sprintf("best[ext=%s]", d.config.Format)
+	}
+	// Default to best
+	return "best"
+}
+
+// extractHeight extracts the height value from quality string (e.g., "1080p" -> "1080").
+func (d *Downloader) extractHeight(quality string) string {
+	// Remove 'p' suffix if present
+	if strings.HasSuffix(quality, "p") {
+		return quality[:len(quality)-1]
+	}
+	return quality
+}
+
+// cleanURL removes shell escaping and normalizes the URL.
+func (d *Downloader) cleanURL(rawURL string) string {
+	// Remove shell escaping (backslashes before special characters)
+	cleaned := strings.ReplaceAll(rawURL, "\\", "")
+	
+	// Try to parse and validate the URL
+	if parsedURL, err := url.Parse(cleaned); err == nil {
+		return parsedURL.String()
+	}
+	
+	// If parsing fails, return the cleaned URL as-is
+	return cleaned
 }

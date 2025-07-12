@@ -23,8 +23,11 @@ DropTubeはYouTube動画をローカルにダウンロードするためのGoア
 
 - Go 1.21以上
 - yt-dlp（システムにインストール済みである必要があります）
+- ffmpeg（高品質ダウンロードに必要）
 
-### yt-dlpのインストール
+### 依存関係のインストール
+
+#### yt-dlpのインストール
 
 ```bash
 # macOS (Homebrew)
@@ -33,8 +36,16 @@ brew install yt-dlp
 # Linux (apt)
 sudo apt install yt-dlp
 
-# pip
-pip install yt-dlp
+#### ffmpegのインストール
+
+ffmpegは映像と音声の結合、フォーマット変換に必要です。高品質な動画をダウンロードする場合は必須です。
+
+```bash
+# macOS (Homebrew)
+brew install ffmpeg
+
+# Linux (apt)
+sudo apt install ffmpeg
 ```
 
 ### DropTubeのビルド
@@ -148,6 +159,7 @@ golint ./...
 - YouTube利用規約に準拠してご利用ください
 - 著作権で保護されたコンテンツのダウンロードは適切な権限が必要です
 - yt-dlpの事前インストールが必要です
+- ffmpegの事前インストールが必要です（高品質ダウンロード時）
 - Go 1.21以上が必要です
 
 ## ライセンス
