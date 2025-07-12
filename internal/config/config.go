@@ -9,26 +9,26 @@ import (
 )
 
 const (
-	DEFAULT_OUTPUT_DIR     = "."
-	DEFAULT_FORMAT         = "best"
-	DEFAULT_AUDIO_FORMAT   = "mp3"
-	DEFAULT_QUALITY        = "best"
-	DEFAULT_VERBOSE        = false
-	DEFAULT_AUDIO_ONLY     = false
-	DEFAULT_PLAYLIST       = false
+	DEFAULT_OUTPUT_DIR   = "."
+	DEFAULT_FORMAT       = "best"
+	DEFAULT_AUDIO_FORMAT = "mp3"
+	DEFAULT_QUALITY      = "best"
+	DEFAULT_VERBOSE      = false
+	DEFAULT_AUDIO_ONLY   = false
+	DEFAULT_PLAYLIST     = false
 )
 
 // Config represents the configuration for video downloading.
 // It contains all the necessary parameters for customizing the download process.
 type Config struct {
-	OutputDir    string
-	Format       string
-	Quality      string
-	AudioOnly    bool
-	AudioFormat  string
-	Playlist     bool
-	Verbose      bool
-	URL          string
+	OutputDir   string
+	Format      string
+	Quality     string
+	AudioOnly   bool
+	AudioFormat string
+	Playlist    bool
+	Verbose     bool
+	URL         string
 }
 
 // NewConfig creates a new configuration with default values.

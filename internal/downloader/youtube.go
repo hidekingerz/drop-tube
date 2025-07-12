@@ -116,7 +116,7 @@ func (d *Downloader) buildFormatSpec() string {
 	if d.config.Format != "best" && d.config.Quality != "best" {
 		// Both format and quality specified
 		height := d.extractHeight(d.config.Quality)
-		return fmt.Sprintf("bestvideo[ext=%s][height<=%s]+bestaudio/best[ext=%s][height<=%s]", 
+		return fmt.Sprintf("bestvideo[ext=%s][height<=%s]+bestaudio/best[ext=%s][height<=%s]",
 			d.config.Format, height, d.config.Format, height)
 	} else if d.config.Quality != "best" {
 		// Only quality specified
@@ -145,7 +145,7 @@ func (d *Downloader) runWithProgress(cmd *exec.Cmd) error {
 	if err != nil {
 		return err
 	}
-	
+
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		return err
@@ -166,7 +166,7 @@ func (d *Downloader) runWithProgress(cmd *exec.Cmd) error {
 	downloadRegex := regexp.MustCompile(`\[download\]`)
 
 	done := make(chan bool)
-	
+
 	// Read both stdout and stderr in separate goroutines
 	go func() {
 		scanner := bufio.NewScanner(stdout)
@@ -200,7 +200,7 @@ func (d *Downloader) runWithProgress(cmd *exec.Cmd) error {
 	// Wait for command to complete
 	cmdErr := cmd.Wait()
 	<-done
-	
+
 	return cmdErr
 }
 
@@ -208,12 +208,12 @@ func (d *Downloader) runWithProgress(cmd *exec.Cmd) error {
 func (d *Downloader) cleanURL(rawURL string) string {
 	// Remove shell escaping (backslashes before special characters)
 	cleaned := strings.ReplaceAll(rawURL, "\\", "")
-	
+
 	// Try to parse and validate the URL
 	if parsedURL, err := url.Parse(cleaned); err == nil {
 		return parsedURL.String()
 	}
-	
+
 	// If parsing fails, return the cleaned URL as-is
 	return cleaned
 }

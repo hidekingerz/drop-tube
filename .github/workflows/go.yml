@@ -5,9 +5,9 @@ name: Go
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
 
 jobs:
 
@@ -17,9 +17,30 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
-        go-version: '1.20'
+        go-version-file: 'go.mod'
+
+    - name: Install goimports
+      run: go install golang.org/x/tools/cmd/goimports@latest
+
+    - name: Check formatting
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "The following files are not formatted:"
+          gofmt -s -l .
+          echo "Please run 'gofmt -s -w .' to format your code"
+          exit 1
+        fi
+
+    - name: Check imports
+      run: |
+        if [ "$(goimports -l . | wc -l)" -gt 0 ]; then
+          echo "The following files have incorrect imports:"
+          goimports -l .
+          echo "Please run 'goimports -w .' to fix your imports"
+          exit 1
+        fi
 
     - name: Build
       run: go build -v ./...
