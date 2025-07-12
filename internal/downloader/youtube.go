@@ -3,12 +3,15 @@
 package downloader
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/schollz/progressbar/v3"
@@ -51,13 +54,13 @@ func (d *Downloader) Download() error {
 	if d.config.Verbose {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("yt-dlp execution failed: %w", err)
+		}
 	} else {
-		bar := progressbar.Default(-1, "downloading video...")
-		defer bar.Finish()
-	}
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("yt-dlp execution failed: %w", err)
+		if err := d.runWithProgress(cmd); err != nil {
+			return fmt.Errorf("yt-dlp execution failed: %w", err)
+		}
 	}
 
 	fmt.Printf("download completed successfully in %s\n", d.config.OutputDir)
@@ -97,7 +100,9 @@ func (d *Downloader) buildYtDlpArgs() []string {
 	args = append(args, "--output", outputTemplate)
 
 	if !d.config.Verbose {
-		args = append(args, "--quiet", "--no-warnings")
+		args = append(args, "--no-warnings", "--newline")
+	} else {
+		args = append(args, "--newline")
 	}
 
 	cleanURL := d.cleanURL(d.config.URL)
@@ -132,6 +137,71 @@ func (d *Downloader) extractHeight(quality string) string {
 		return quality[:len(quality)-1]
 	}
 	return quality
+}
+
+// runWithProgress executes yt-dlp with progress tracking.
+func (d *Downloader) runWithProgress(cmd *exec.Cmd) error {
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	bar := progressbar.NewOptions(100,
+		progressbar.OptionSetDescription("downloading video..."),
+		progressbar.OptionSetWidth(50),
+		progressbar.OptionShowCount())
+	defer bar.Finish()
+
+	// Progress regex patterns for yt-dlp output
+	progressRegex := regexp.MustCompile(`\[download\]\s+(\d+(?:\.\d+)?)%`)
+	downloadRegex := regexp.MustCompile(`\[download\]`)
+
+	done := make(chan bool)
+	
+	// Read both stdout and stderr in separate goroutines
+	go func() {
+		scanner := bufio.NewScanner(stdout)
+		for scanner.Scan() {
+			line := scanner.Text()
+			if downloadRegex.MatchString(line) {
+				if matches := progressRegex.FindStringSubmatch(line); len(matches) > 1 {
+					if percent, err := strconv.ParseFloat(matches[1], 64); err == nil {
+						bar.Set(int(percent))
+					}
+				}
+			}
+		}
+	}()
+
+	go func() {
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			line := scanner.Text()
+			if downloadRegex.MatchString(line) {
+				if matches := progressRegex.FindStringSubmatch(line); len(matches) > 1 {
+					if percent, err := strconv.ParseFloat(matches[1], 64); err == nil {
+						bar.Set(int(percent))
+					}
+				}
+			}
+		}
+		done <- true
+	}()
+
+	// Wait for command to complete
+	cmdErr := cmd.Wait()
+	<-done
+	
+	return cmdErr
 }
 
 // cleanURL removes shell escaping and normalizes the URL.
